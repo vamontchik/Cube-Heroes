@@ -23,10 +23,11 @@ public class GameManager : MonoBehaviour
         this.ally = new Cube("ally");
         this.enemy = new Cube("enemy");
         this.turn = new Turn(PLAYER_AMOUNT);
+        this.currentTurn = ALLY_TURN;
     }
 
     // Update is called once per frame
-    void FixedUpdate() {
+    void Update() {
         AttackResult result = new AttackResult();
         this.currentTurn = turn.NextTurn();
 
@@ -39,7 +40,7 @@ public class GameManager : MonoBehaviour
             result = enemy.Attack(ally);
         }
 
-        Debug.Log(String.Format("{0}, Ally Health: {1}, Enemy Health: {2}", result, ally.GetHealth(), enemy.GetHealth()));
+        Debug.Log(String.Format("{0}, Ally Health: {1}, Enemy Health: {2}, Turn: {3}", result, ally.GetHealth(), enemy.GetHealth(), this.currentTurn));
 
         if (result.isEnemyDead)
         {

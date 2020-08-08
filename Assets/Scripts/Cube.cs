@@ -12,7 +12,9 @@ public class Cube
     // private int resistance;
     // private int accuracy;
 
-    private Random rand;
+    // needs to be static, or all cubes
+    // have duplicate moves... all get same initial seed?
+    private static Random rand = new Random();
 
     private string name;
 
@@ -21,14 +23,12 @@ public class Cube
         this.health = 25;
         this.attackMin = 0;
         this.attackMax = 10;
-        this.defense = 3;
+        this.defense = 1;
         // this.speed = 0;
         this.critRate = 25;
-        this.critDamage = 0;
+        this.critDamage = 2;
         // this.resistance = 0;
         // this.accuracy = 0;
-
-        this.rand = new Random();
 
         this.name = name;
     }
