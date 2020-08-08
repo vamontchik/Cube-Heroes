@@ -8,7 +8,7 @@ public class Cube
     private int defense;
     // private int speed;
     private int critRate;
-    private int critDamage;
+    private double critDamage;
     // private int resistance;
     // private int accuracy;
 
@@ -18,29 +18,19 @@ public class Cube
 
     private string name;
 
-    public Cube(string name)
+    public Cube(int health, int attackMin, int attackMax, int defense, int critRate, double critDamage, string name)
     {
-        this.health = 25;
-        this.attackMin = 0;
-        this.attackMax = 10;
-        this.defense = 1;
+        this.health = health;
+        this.attackMin = attackMin;
+        this.attackMax = attackMax;
+        this.defense = defense;
         // this.speed = 0;
-        this.critRate = 25;
-        this.critDamage = 2;
+        this.critRate = critRate;
+        this.critDamage = critDamage;
         // this.resistance = 0;
         // this.accuracy = 0;
 
         this.name = name;
-    }
-
-    private bool IsCrit()
-    {
-        return rand.Next(/*inclusive*/ 0, /*exclusive*/ 101) < critRate;
-    }
-
-    private int CalcAttack()
-    {
-        return rand.Next(/*inclusive*/ this.attackMin, /*exclusive*/ this.attackMax);
     }
 
     public int GetHealth()
@@ -48,20 +38,26 @@ public class Cube
         return this.health;
     }
 
+    public string GetName()
+    {
+        return this.name;
+    }
+
     public AttackResult Attack(Cube enemy)
     {
         AttackResult resultObj = new AttackResult();
 
-        resultObj.isCrit = IsCrit();
-        int attack = CalcAttack();
-        resultObj.damageApplied = attack + (resultObj.isCrit ? attack * this.critDamage : 0);
+        resultObj.isCrit = rand.Next(/*inclusive*/ 0, /*exclusive*/ 101) < critRate;
+        
+        int tempAttack = rand.Next(/*inclusive*/ this.attackMin, /*exclusive*/ this.attackMax);
+        int actualAttack = tempAttack + (int)Math.Floor(resultObj.isCrit ? tempAttack * this.critDamage : 0);
+        
         resultObj.enemyDefense = enemy.defense;
-
-        if (resultObj.damageApplied > resultObj.enemyDefense)
-        {
-            enemy.health -= (resultObj.damageApplied - resultObj.enemyDefense);
-        }
-
+        
+        resultObj.damageApplied = Math.Max(0, actualAttack - enemy.defense);
+        
+        enemy.health -= resultObj.damageApplied;
+        
         resultObj.isEnemyDead = enemy.health <= 0;
 
         return resultObj;

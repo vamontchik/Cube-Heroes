@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -20,8 +21,8 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start() 
     {
-        this.ally = new Cube("ally");
-        this.enemy = new Cube("enemy");
+        this.ally = new Cube(100, 0, 10, 2, 25, 1.5, "ally");
+        this.enemy = new Cube(100, 0, 10, 2, 25, 1.5, "enemy");
         this.turn = new Turn(PLAYER_AMOUNT);
         this.currentTurn = ALLY_TURN;
     }
@@ -31,16 +32,40 @@ public class GameManager : MonoBehaviour
         AttackResult result = new AttackResult();
         this.currentTurn = turn.NextTurn();
 
+        string toPrint;
         if (this.currentTurn == ALLY_TURN)
         {
             result = ally.Attack(enemy);
+
+            toPrint = String.Format(
+                "{0} attacks {1} for {2} damage! {0} Health: {3}, {1} Health: {4}",
+                ally.GetName(),
+                enemy.GetName(),
+                result.damageApplied,
+                ally.GetHealth(),
+                enemy.GetHealth()
+            );
+
         }
         else
         {
             result = enemy.Attack(ally);
+
+            toPrint = String.Format(
+                "{0} attacks {1} for {2} damage! {1} Health: {3}, {0} Health: {4}",
+                enemy.GetName(),
+                ally.GetName(),
+                result.damageApplied,
+                ally.GetHealth(),
+                enemy.GetHealth()
+            );
         }
 
-        Debug.Log(String.Format("{0}, Ally Health: {1}, Enemy Health: {2}, Turn: {3}", result, ally.GetHealth(), enemy.GetHealth(), this.currentTurn));
+        if (result.isCrit)
+        {
+            toPrint = "Critical Hit! " + toPrint;
+        }
+        Debug.Log(toPrint);
 
         if (result.isEnemyDead)
         {
