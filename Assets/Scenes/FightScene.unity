@@ -159,7 +159,7 @@ Light:
   m_CookieSize: 10
   m_Shadows:
     m_Type: 2
-    m_Resolution: -1
+    m_Resolution: 3
     m_CustomResolution: -1
     m_Strength: 1
     m_Bias: 0.05
@@ -626,6 +626,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 497ded2eb4f52a84688d530c5b0a95d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allyRigidBody: {fileID: 1693811598}
+  enemyRigidBody: {fileID: 1552363700}
 --- !u!1 &2018233856
 GameObject:
   m_ObjectHideFlags: 0
