@@ -3,6 +3,7 @@
 public class Cube
 {
     private int health;
+    private int maxHealth;
     private int attackMin;
     private int attackMax;
     private int defense;
@@ -18,9 +19,11 @@ public class Cube
 
     private string name;
 
-    public Cube(int health, int attackMin, int attackMax, int defense, int critRate, double critDamage, string name)
+    // TODO: use builder pattern here...
+    public Cube(int health, int maxHealth, int attackMin, int attackMax, int defense, int critRate, double critDamage, string name)
     {
         this.health = health;
+        this.maxHealth = maxHealth;
         this.attackMin = attackMin;
         this.attackMax = attackMax;
         this.defense = defense;
@@ -36,6 +39,11 @@ public class Cube
     public int GetHealth()
     {
         return this.health;
+    }
+
+    public int GetMaxHealth()
+    {
+        return this.maxHealth;
     }
 
     public string GetName()

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Linq;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -14,21 +15,30 @@ public class GameManager : MonoBehaviour
     private readonly int ALLY_TURN = 0;
     private readonly int ENEMY_TURN = 1;
 
+    private float sinceLastUpdate = 0f;
+
     // Unity objects
     public Rigidbody allyRigidBody;
     public Rigidbody enemyRigidBody;
 
+    public Slider allySlider;
+    public Slider enemySlider;
+
     // Start is called before the first frame update
     void Start() 
     {
-        this.ally = new Cube(100, 0, 10, 2, 25, 1.5, "ally");
-        this.enemy = new Cube(100, 0, 10, 2, 25, 1.5, "enemy");
+        this.ally = new Cube(100, 100, 6, 16, 5, 25, 1.5, "ally");
+        this.enemy = new Cube(100, 100, 6, 16, 5, 25, 1.5, "enemy");
         this.turn = new Turn(PLAYER_AMOUNT);
         this.currentTurn = ALLY_TURN;
     }
 
     // Update is called once per frame
     void Update() {
+        sinceLastUpdate += Time.deltaTime;
+        if (sinceLastUpdate < 1.0) return;
+        sinceLastUpdate = 0f;
+
         AttackResult result = new AttackResult();
         this.currentTurn = turn.NextTurn();
 
@@ -36,6 +46,7 @@ public class GameManager : MonoBehaviour
         if (this.currentTurn == ALLY_TURN)
         {
             result = ally.Attack(enemy);
+            enemySlider.value = 1.0f * enemy.GetHealth() / enemy.GetMaxHealth();
 
             toPrint = String.Format(
                 "{0} attacks {1} for {2} damage! {0} Health: {3}, {1} Health: {4}",
@@ -50,6 +61,7 @@ public class GameManager : MonoBehaviour
         else
         {
             result = enemy.Attack(ally);
+            allySlider.value = 1.0f * ally.GetHealth() / ally.GetMaxHealth();
 
             toPrint = String.Format(
                 "{0} attacks {1} for {2} damage! {1} Health: {3}, {0} Health: {4}",
