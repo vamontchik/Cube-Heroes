@@ -3,6 +3,7 @@ using System;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class GameManager : MonoBehaviour
     //private readonly int ENEMY_TURN = 1;
 
     private List<TextMeshPro> listOfDamageNumbers;
+    private readonly float DELETE_THRESHOLD = 0.01f;
 
     private float sinceLastUpdate = 0f;
 
@@ -42,11 +44,14 @@ public class GameManager : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
-        foreach (TextMeshPro dmgNum in listOfDamageNumbers)
-        {
+        List<TextMeshPro> toDelete = listOfDamageNumbers.Where(dmgNum => dmgNum.color.a <= DELETE_THRESHOLD).ToList();
+        listOfDamageNumbers = listOfDamageNumbers.Where(dmgNum => dmgNum.color.a > DELETE_THRESHOLD).ToList();
+        toDelete.ForEach(x => Destroy(x));
+        
+        listOfDamageNumbers.ForEach(dmgNum => {
             dmgNum.color = new Color(dmgNum.color.r, dmgNum.color.g, dmgNum.color.b, dmgNum.color.a - (0.5f * Time.deltaTime));
             dmgNum.transform.position += new Vector3(0, 2f) * Time.deltaTime;
-        }
+        });
 
         sinceLastUpdate += Time.deltaTime;
         if (sinceLastUpdate < 1.0) return;

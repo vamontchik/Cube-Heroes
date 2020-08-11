@@ -46,10 +46,10 @@ public class Cube
         return this.maxHealth;
     }
 
-    public string GetName()
-    {
-        return this.name;
-    }
+    //public string GetName()
+    //{
+    //    return this.name;
+    //}
 
     public AttackResult Attack(Cube enemy)
     {
