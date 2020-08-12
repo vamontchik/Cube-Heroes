@@ -4,8 +4,6 @@ using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
-using UnityEditor.Experimental.GraphView;
-using System;
 
 public class GameManager : MonoBehaviour
 {
