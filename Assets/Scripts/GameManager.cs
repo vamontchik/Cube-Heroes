@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -186,10 +187,30 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    IEnumerator DelayBeforeExit()
+    {
+        yield return new WaitForSeconds(2f);
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+
+    }
+
+    private bool GameFinished()
+    {
+        return ally.Health <= 0 || enemy.Health <= 0;
+    }
+
     // Update is called once per frame
     void Update() {
         CleanUpDamageNumbers();
         UpdatePositionsForDamageNumbers();
+
+        if (GameFinished()) return;
+        
         List<Cube> cubesToMove = UpdateSpeeds();
         cubesToMove.ForEach(cube =>
         {
@@ -199,14 +220,9 @@ public class GameManager : MonoBehaviour
             UpdateSlider(enemySlider, randEnemy.Health, randEnemy.MaxHealth);
             TextMeshPro created = CreateDamagePopup(randEnemy, result);
             ModifyWithCritAsNecessary(created, result);
-
             if (result.isEnemyDead)
             {
-#if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-#else
-                Application.Quit();
-#endif
+                StartCoroutine(DelayBeforeExit());
             }
         });
     }
