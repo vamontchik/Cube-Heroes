@@ -13,7 +13,7 @@ public class Cube
     public int AttackMin { get; set; }
     public int AttackMax { get; set; }
     public int Defense { get; set; }
-    public int TurnValue { get; set; }
+    public float TurnValue { get; set; }
     public int MaxTurnValue { get; set; }
     public int Speed { get; set; }
     public int CritRate { get; set; }

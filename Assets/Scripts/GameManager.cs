@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
@@ -17,15 +16,13 @@ public class GameManager : MonoBehaviour
     private List<TextMeshPro> listOfDamageNumbers;
     private readonly float DELETE_THRESHOLD = 0.01f;
 
-    private float sinceLastUpdate = 0f;
-
     // Unity objects
     public Transform allyTransform;
     public Transform enemyTransform;
 
     public Slider allyHealthSlider;
     public Slider enemyHealthSlider;
-
+    public Slider allySpeedSlider;
     public Slider enemySpeedSlider;
 
     public TextMeshPro damageNumbers;
@@ -51,14 +48,14 @@ public class GameManager : MonoBehaviour
 
         enemy = new Cube
         {
-            Health = 100,
-            MaxHealth = 100,
-            AttackMin = 6,
-            AttackMax = 16,
+            Health = 200,
+            MaxHealth = 200,
+            AttackMin = 25,
+            AttackMax = 50,
             Defense = 5,
             TurnValue = 0,
             MaxTurnValue = 100,
-            Speed = 50,
+            Speed = 10,
             CritRate = 25,
             CritDamage = 1.5,
             Name = "enemy"
@@ -82,17 +79,31 @@ public class GameManager : MonoBehaviour
         listOfDamageNumbers = new List<TextMeshPro>();
     }
 
+    private Slider GetCorrespondingSpeedSlider(Cube cube)
+    {
+        if (cube == ally)
+        {
+            return allySpeedSlider;
+        }
+        else
+        {
+            return enemySpeedSlider;
+        }
+    }
+
     private List<Cube> UpdateSpeeds()
     {
         List<Cube> cubesToMove = new List<Cube>();
 
         allCubes.ForEach(cube => {
-            cube.TurnValue += cube.Speed;
+            cube.TurnValue += cube.Speed * Time.deltaTime;
             if (cube.TurnValue >= cube.MaxTurnValue)
             {
                 cube.TurnValue -= cube.MaxTurnValue;
                 cubesToMove.Add(cube);
             }
+            Slider speedSlider = GetCorrespondingSpeedSlider(cube);
+            UpdateSlider(speedSlider, cube.TurnValue, cube.MaxTurnValue);
         });
 
         return cubesToMove;
@@ -145,19 +156,25 @@ public class GameManager : MonoBehaviour
             attackedCubeTransform = enemyTransform;
         }
 
-        TextMeshPro created = Instantiate(damageNumbers, attackedCubeTransform.position + 2 * Vector3.up, Quaternion.Euler(0, -90, 0));
+        TextMeshPro created = Instantiate(damageNumbers, attackedCubeTransform.position + 3 * Vector3.up, Quaternion.Euler(0, -90, 0));
         created.SetText(result.damageApplied.ToString());
         listOfDamageNumbers.Add(created);
 
         return created;
     }
 
-    private void UpdateSlider(Slider ofAttackedCube, Cube attackedCube)
+    private void UpdateSlider(Slider slider, int current, int max)
     {
-        ofAttackedCube.value = 1.0f * attackedCube.Health / attackedCube.MaxHealth;
+        slider.value = 1.0f * current / max;
     }
 
-    private Slider GetCorrespondingSlider(Cube attackedCube)
+    private void UpdateSlider(Slider slider, float current, int max)
+    {
+        slider.value = current / max;
+    }
+
+
+    private Slider GetCorrespondingHealthSlider(Cube attackedCube)
     {
         if (attackedCube == ally)
         {
@@ -173,19 +190,13 @@ public class GameManager : MonoBehaviour
     void Update() {
         CleanUpDamageNumbers();
         UpdatePositionsForDamageNumbers();
-
-        // barrier for updating actions every second
-        sinceLastUpdate += Time.deltaTime;
-        if (sinceLastUpdate < 1.0f) return;
-        sinceLastUpdate = 0f;
-
         List<Cube> cubesToMove = UpdateSpeeds();
         cubesToMove.ForEach(cube =>
         {
             Cube randEnemy = PickRandomEnemy(cube);
             AttackResult result = cube.Attack(randEnemy);
-            Slider enemySlider = GetCorrespondingSlider(randEnemy);
-            UpdateSlider(enemySlider, randEnemy);
+            Slider enemySlider = GetCorrespondingHealthSlider(randEnemy);
+            UpdateSlider(enemySlider, randEnemy.Health, randEnemy.MaxHealth);
             TextMeshPro created = CreateDamagePopup(randEnemy, result);
             ModifyWithCritAsNecessary(created, result);
 
