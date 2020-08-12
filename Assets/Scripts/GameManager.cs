@@ -20,9 +20,10 @@ public class GameManager : MonoBehaviour
 
     private Rigidbody attackingCube = null;
     private Rigidbody defendingCube = null;
+    
     private bool towards = true;
+    private bool fightOver = false;
     private bool objectsMoving = false;
-    private bool stopUpdates = false;
 
     // Unity objects
     public Transform allyTransform;
@@ -107,7 +108,7 @@ public class GameManager : MonoBehaviour
         List<Cube> cubesToMove = new List<Cube>();
 
         allCubes.ForEach(cube => {
-            cube.TurnValue += cube.Speed * Time.deltaTime;
+            cube.TurnValue += cube.Speed;
             if (cube.TurnValue >= cube.MaxTurnValue)
             {
                 cube.TurnValue -= cube.MaxTurnValue;
@@ -201,7 +202,7 @@ public class GameManager : MonoBehaviour
     IEnumerator DelayBeforeExit()
     {
         yield return new WaitForSeconds(2f);
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(SceneIndex.MENU_INDEX);
     }
 
     private void MoveCubes(List<Cube> cubes)
@@ -266,18 +267,18 @@ public class GameManager : MonoBehaviour
         {
             direction = (attackingCube != null && defendingCube != null) ? attackingCube.position - defendingCube.position : Vector3.zero;
         }
-        attackingCube.MovePosition(attackingCube.transform.position + direction.normalized * 20f * Time.deltaTime);
+
+
+        if (attackingCube != null)
+        {
+            attackingCube.MovePosition(attackingCube.transform.position + direction.normalized * 20f * Time.deltaTime);
+        }
     }
 
-
-    // Update is called once per frame
-    private void Update() 
+    public void OnTurnButtonPress()
     {
-        if (stopUpdates || objectsMoving) return;
+        if (objectsMoving || fightOver) return;
 
-        CleanUpDamageNumbers();
-        UpdatePositionsForDamageNumbers();
-        
         List<Cube> cubesToMove = UpdateSpeeds();
         cubesToMove.ForEach(cube =>
         {
@@ -287,15 +288,20 @@ public class GameManager : MonoBehaviour
             UpdateSlider(enemySlider, randEnemy.Health, randEnemy.MaxHealth);
             TextMeshPro created = CreateDamagePopup(randEnemy, result);
             ModifyWithCritAsNecessary(created, result);
-            
             if (result.isEnemyDead)
             {
-                stopUpdates = true;
+                fightOver = true;
                 StartCoroutine(DelayBeforeExit());
             }
         });
+        MoveCubes(cubesToMove); // group up all moveable cubes to ensure a single call to coroutine
+    }
 
-        // group up all moveable cubes to ensure a single call to coroutine
-        MoveCubes(cubesToMove);
+
+    // Update is called once per frame
+    private void Update() 
+    {
+        CleanUpDamageNumbers();
+        UpdatePositionsForDamageNumbers();
     }
 }
