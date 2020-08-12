@@ -4,6 +4,8 @@ using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
+using UnityEditor.Experimental.GraphView;
+using System;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,6 +19,12 @@ public class GameManager : MonoBehaviour
     private List<TextMeshPro> listOfDamageNumbers;
     private readonly float DELETE_THRESHOLD = 0.01f;
 
+    private Rigidbody attackingCube = null;
+    private Rigidbody defendingCube = null;
+    private bool towards = true;
+    private bool objectsMoving = false;
+    private bool stopUpdates = false;
+
     // Unity objects
     public Transform allyTransform;
     public Transform enemyTransform;
@@ -26,7 +34,10 @@ public class GameManager : MonoBehaviour
     public Slider allySpeedSlider;
     public Slider enemySpeedSlider;
 
-    public TextMeshPro damageNumbers;
+    public TextMeshPro damageNumbersPrefab;
+
+    public Rigidbody allyRigidbody;
+    public Rigidbody enemyRigidbody;
 
     // Start is called before the first frame update
     void Start()
@@ -157,7 +168,7 @@ public class GameManager : MonoBehaviour
             attackedCubeTransform = enemyTransform;
         }
 
-        TextMeshPro created = Instantiate(damageNumbers, attackedCubeTransform.position + 3 * Vector3.up, Quaternion.Euler(0, -90, 0));
+        TextMeshPro created = Instantiate(damageNumbersPrefab, attackedCubeTransform.position + 3 * Vector3.up, Quaternion.Euler(0, -90, 0));
         created.SetText(result.damageApplied.ToString());
         listOfDamageNumbers.Add(created);
 
@@ -199,17 +210,79 @@ public class GameManager : MonoBehaviour
 
     }
 
-    private bool GameFinished()
+    private void MoveCubes(List<Cube> cubes)
     {
-        return ally.Health <= 0 || enemy.Health <= 0;
+        List<MovingAction> actions = new List<MovingAction>();
+        cubes.ForEach(cube =>
+        {
+            MovingAction newAction;
+            if (cube == ally)
+            {
+                newAction = new MovingAction()
+                {
+                    moving = allyRigidbody,
+                    target = enemyRigidbody
+                };
+            }
+            else
+            {
+                newAction = new MovingAction()
+                {
+                    moving = enemyRigidbody,
+                    target = allyRigidbody
+                };
+            }
+            actions.Add(newAction);
+        });
+
+        StartCoroutine(MoveAll(actions));
     }
 
+    private IEnumerator MoveAll(List<MovingAction> actions)
+    {
+        objectsMoving = true;
+
+        foreach (MovingAction movingAction in actions)
+        {
+            attackingCube = movingAction.moving;
+            defendingCube = movingAction.target;
+
+            towards = true;
+            yield return new WaitUntil(() => Vector3.Magnitude(movingAction.target.position - movingAction.moving.position) < 1.5f);
+            towards = false;
+            yield return new WaitUntil(() => Vector3.Magnitude(movingAction.moving.position - movingAction.target.position) > 6f);
+
+            attackingCube = null;
+            defendingCube = null;
+        }
+
+        objectsMoving = false;
+    }
+
+    private void FixedUpdate()
+    {
+        if (!objectsMoving) return;
+
+        Vector3 direction;
+        if (towards)
+        {
+            direction = (attackingCube != null && defendingCube != null) ? defendingCube.position - attackingCube.position : Vector3.zero;
+        } 
+        else
+        {
+            direction = (attackingCube != null && defendingCube != null) ? attackingCube.position - defendingCube.position : Vector3.zero;
+        }
+        attackingCube.MovePosition(attackingCube.transform.position + direction.normalized * 20f * Time.deltaTime);
+    }
+
+
     // Update is called once per frame
-    void Update() {
+    private void Update() 
+    {
+        if (stopUpdates || objectsMoving) return;
+
         CleanUpDamageNumbers();
         UpdatePositionsForDamageNumbers();
-
-        if (GameFinished()) return;
         
         List<Cube> cubesToMove = UpdateSpeeds();
         cubesToMove.ForEach(cube =>
@@ -220,10 +293,15 @@ public class GameManager : MonoBehaviour
             UpdateSlider(enemySlider, randEnemy.Health, randEnemy.MaxHealth);
             TextMeshPro created = CreateDamagePopup(randEnemy, result);
             ModifyWithCritAsNecessary(created, result);
+            
             if (result.isEnemyDead)
             {
+                stopUpdates = true;
                 StartCoroutine(DelayBeforeExit());
             }
         });
+
+        // group up all moveable cubes to ensure a single call to coroutine
+        MoveCubes(cubesToMove);
     }
 }
