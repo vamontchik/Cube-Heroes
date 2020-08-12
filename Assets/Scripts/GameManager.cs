@@ -4,6 +4,7 @@ using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -123,8 +124,9 @@ public class GameManager : MonoBehaviour
     private void CleanUpDamageNumbers()
     {
         List<TextMeshPro> toDelete = listOfDamageNumbers.Where(dmgNum => dmgNum.color.a <= DELETE_THRESHOLD).ToList();
-        listOfDamageNumbers = listOfDamageNumbers.Where(dmgNum => dmgNum.color.a > DELETE_THRESHOLD).ToList();
-        toDelete.ForEach(x => Destroy(x));
+        List<TextMeshPro> newList = listOfDamageNumbers.Where(dmgNum => dmgNum.color.a > DELETE_THRESHOLD).ToList();
+        toDelete.ForEach(x => Destroy(x.gameObject));
+        listOfDamageNumbers = newList;
     }
 
     private void UpdatePositionsForDamageNumbers()
@@ -199,13 +201,7 @@ public class GameManager : MonoBehaviour
     IEnumerator DelayBeforeExit()
     {
         yield return new WaitForSeconds(2f);
-
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
-
+        SceneManager.LoadScene(0);
     }
 
     private void MoveCubes(List<Cube> cubes)
