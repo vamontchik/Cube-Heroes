@@ -118,9 +118,8 @@ public class GameManager : MonoBehaviour
     private void CleanUpDamageNumbers()
     {
         List<TextMeshPro> toDelete = listOfDamageNumbers.Where(dmgNum => dmgNum.color.a <= DELETE_THRESHOLD).ToList();
-        List<TextMeshPro> newList = listOfDamageNumbers.Where(dmgNum => dmgNum.color.a > DELETE_THRESHOLD).ToList();
+        listOfDamageNumbers.RemoveAll(dmgNum => dmgNum.color.a <= DELETE_THRESHOLD);
         toDelete.ForEach(x => Destroy(x.gameObject));
-        listOfDamageNumbers = newList;
     }
 
     private void UpdateAlphasAndPositionsForDamageNumbers()
