@@ -25,7 +25,6 @@ public class GameManager : MonoBehaviour
     private Rigidbody defendingCube = null;
     
     private bool towards = true;
-    private bool fightOver = false;
     private bool objectsMoving = false;
 
     private readonly float _60_HZ = 0.01667f;
@@ -162,7 +161,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator DelayBeforeExit()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
         SceneManager.LoadScene(SceneIndex.MENU_INDEX);
     }
 
@@ -224,11 +223,12 @@ public class GameManager : MonoBehaviour
     {
         while(true)
         {
-            if (objectsMoving || fightOver) yield break; // effectively "return"
+            if (objectsMoving) yield break; // effectively "return"
 
             List<Cube> cubesToMove = UpdateSpeeds();
             List<AttackResult> results = new List<AttackResult>();
-            cubesToMove.ForEach(cube =>
+            bool fightOver = false;
+            foreach (Cube cube in cubesToMove)
             {
                 Cube enemy = GetEnemy(cube);
                 AttackResult result = cube.Attack(enemy);
@@ -236,14 +236,16 @@ public class GameManager : MonoBehaviour
                 if (result.isEnemyDead)
                 {
                     fightOver = true;
+                    break; // if an attack kills the other, prevent additional moves
                 }
-            });
+            }
 
             yield return StartCoroutine(MoveCubes(cubesToMove, results)); // move cubes in one go before resuming execution
 
             if (fightOver)
             {
                 yield return StartCoroutine(DelayBeforeExit());
+                yield break; // effectively "return" , instead of waiting another 1/60 seconds end logic updates
             }
 
             yield return new WaitForSeconds(_60_HZ);
@@ -252,8 +254,6 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator ActionUpdate()
     {
-        if (fightOver) yield break; // effecitvely "return"
-
         while(true)
         {
             int queueLengthCapture = uiQueue.Count;
@@ -278,7 +278,6 @@ public class GameManager : MonoBehaviour
         {
             direction = (attackingCube != null && defendingCube != null) ? attackingCube.position - defendingCube.position : Vector3.zero;
         }
-
 
         if (attackingCube != null)
         {
