@@ -2,6 +2,9 @@
 
 public class MovingAction
 {
-    public Rigidbody moving { get; set; }
-    public Rigidbody target { get; set; }
+    public Cube movingCube { get; set; }
+    public Rigidbody movingRigidbody { get; set; }
+    public Cube targetCube { get; set; }
+    public Rigidbody targetRigidbody { get; set; }
+    public AttackResult result { get; set; }
 }
