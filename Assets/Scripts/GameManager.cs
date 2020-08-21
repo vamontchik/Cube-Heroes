@@ -48,11 +48,11 @@ public class GameManager : MonoBehaviour
     {
         ally = new Cube
         {
-            Health = 100,
-            MaxHealth = 100,
-            AttackMin = 6,
-            AttackMax = 16,
-            Defense = 5,
+            Health = 200,
+            MaxHealth = 200,
+            AttackMin = 10,
+            AttackMax = 20,
+            Defense = 0,
             TurnValue = 0,
             MaxTurnValue = 100,
             Speed = 2,
@@ -64,15 +64,15 @@ public class GameManager : MonoBehaviour
 
         enemy = new Cube
         {
-            Health = 200,
-            MaxHealth = 200,
-            AttackMin = 25,
-            AttackMax = 50,
-            Defense = 5,
+            Health = 100,
+            MaxHealth = 100,
+            AttackMin = 5,
+            AttackMax = 10,
+            Defense = 0,
             TurnValue = 0,
             MaxTurnValue = 100,
             Speed = 1,
-            CritRate = 25,
+            CritRate = 10,
             CritDamage = 1.5,
             Name = "enemy"
         };
@@ -123,6 +123,7 @@ public class GameManager : MonoBehaviour
 
     private void UpdateAlphasAndPositionsForDamageNumbers()
     {
+        // assumed: this method is only called inside of the Update() loop, hence the use of 'Time.deltaTime'
         listOfDamageNumbers.ForEach(dmgNum => {
             dmgNum.color = new Color(dmgNum.color.r, dmgNum.color.g, dmgNum.color.b, dmgNum.color.a - (0.5f * Time.deltaTime));
             dmgNum.transform.position += new Vector3(0, 2f) * Time.deltaTime;
@@ -167,10 +168,13 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator MoveCubes(List<Cube> cubes, List<AttackResult> results)
     {
+        if (cubes.Count != results.Count)
+            Debug.LogWarning(string.Format("size mismatch - cubes: {0}, results: {1}", cubes.Count, results.Count));
+
         // create moving actions
         List<MovingAction> actions = new List<MovingAction>();
         int count = 0;
-        cubes.ForEach(cube =>
+        foreach (Cube cube in cubes)
         {
             MovingAction newAction;
             if (cube == ally)
@@ -197,7 +201,7 @@ public class GameManager : MonoBehaviour
             }
             actions.Add(newAction);
             ++count;
-        });
+        }
 
         // execute moving actions
         objectsMoving = true;
@@ -238,6 +242,15 @@ public class GameManager : MonoBehaviour
                     fightOver = true;
                     break; // if an attack kills the other, prevent additional moves
                 }
+            }
+
+            // if there's a mismatch between results.Count and cubesToMove.Count,
+            // then trim off cubes from cubesToMove to match results size.
+            // note: this only happens at the end of the game, 
+            //       when the 'result.isEnemyDead' body executes
+            if (results.Count != cubesToMove.Count)
+            {
+                cubesToMove.RemoveRange(results.Count, cubesToMove.Count - results.Count);
             }
 
             yield return StartCoroutine(MoveCubes(cubesToMove, results)); // move cubes in one go before resuming execution
