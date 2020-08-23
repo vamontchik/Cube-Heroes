@@ -21,12 +21,13 @@ public class FightRewardManager : MonoBehaviour
         Item drop = new Item()
         {
             Name = "test item",
-            Type = ItemType.WEAPON,
-            StatIncrease = 5
+            ItemType = ItemType.WEAPON,
+            StatType = StatType.ATTACK,
+            StatIncrease = new System.Random().Next(/*inclusive*/ 5, /*exclusive*/ 10)
         };
 
         // save item to player inventory file
-        SaveItemData(drop, ALLY_DATA_FILENAME);
+        SaveItemData(drop);
 
         // enqueue ui update for new item text
         string old = newItemStr.text;

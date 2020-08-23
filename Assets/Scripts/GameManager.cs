@@ -41,12 +41,16 @@ public class GameManager : MonoBehaviour
 
     public TextMeshPro damageNumbersPrefab;
 
+    public TextMeshProUGUI weaponDamageText;
+
     public Rigidbody allyRigidbody;
     public Rigidbody enemyRigidbody;
 
     // Start is called before the first frame update
     void Start()
     {
+        uiQueue = new Queue<Action>();
+
         ally = new Cube
         {
             Health = 200,
@@ -64,11 +68,20 @@ public class GameManager : MonoBehaviour
         };
 
         Debug.Log("Loading item data...");
-        Item item = LoadItemData(ALLY_DATA_FILENAME);
+        Item item = LoadItemData();
         if (item != null)
         {
             Debug.Log(string.Format("Loaded item: {0}", item));
+            
             ally.Equipped.Add(item);
+
+            uiQueue.Enqueue(() => weaponDamageText.SetText(string.Format("+{0}", item.StatIncrease)));
+        } 
+        else
+        {
+            Debug.Log("No items found!");
+
+            uiQueue.Enqueue(() => weaponDamageText.SetText("+0"));
         }
 
         enemy = new Cube
@@ -99,8 +112,6 @@ public class GameManager : MonoBehaviour
             { ally, new List<Slider>() { allyHealthSlider, allySpeedSlider } },
             { enemy, new List<Slider>() { enemyHealthSlider, enemySpeedSlider } }
         };
-
-        uiQueue = new Queue<Action>();
 
         StartCoroutine(LogicUpdate());
     }

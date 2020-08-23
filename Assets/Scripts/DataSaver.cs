@@ -11,9 +11,9 @@ public class DataSaver
     public static readonly string ALLY_DATA_FILENAME = "ally_data.json";
     public static readonly string DATA_FOLDER_NAME = "data";
 
-    public static void SaveItemData(Item item, string dataFile)
+    public static void SaveItemData(Item item)
     {
-        string path = Path.Combine(Path.Combine(Application.persistentDataPath, DATA_FOLDER_NAME), dataFile);
+        string path = Path.Combine(Path.Combine(Application.persistentDataPath, DATA_FOLDER_NAME), ALLY_DATA_FILENAME);
  
         string dirName = Path.GetDirectoryName(path);
         if (!Directory.Exists(dirName)) 
@@ -35,9 +35,9 @@ public class DataSaver
         }
     }
 
-    public static Item LoadItemData(string dataFile)
+    public static Item LoadItemData()
     {
-        string path = Path.Combine(Path.Combine(Application.persistentDataPath, DATA_FOLDER_NAME), dataFile);
+        string path = Path.Combine(Path.Combine(Application.persistentDataPath, DATA_FOLDER_NAME), ALLY_DATA_FILENAME);
 
         string dirName = Path.GetDirectoryName(path);
         if (!Directory.Exists(dirName))
@@ -65,7 +65,7 @@ public class DataSaver
             return null;
         }
 
-        string jsonData = Encoding.ASCII.GetString(jsonBytes);
+        string jsonData = Encoding.ASCII.GetString(jsonBytes); // TODO: allows for utf8 encoding?
         return JsonUtility.FromJson<Item>(jsonData);
     }
 

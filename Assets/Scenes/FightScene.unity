@@ -1641,6 +1641,7 @@ MonoBehaviour:
   allySpeedSlider: {fileID: 89840259}
   enemySpeedSlider: {fileID: 1421644551}
   damageNumbersPrefab: {fileID: 3222379901553352564, guid: ff92bbacf16185f418b3ef0d948be44c, type: 3}
+  weaponDamageText: {fileID: 1551784650}
   allyRigidbody: {fileID: 1693811598}
   enemyRigidbody: {fileID: 1552363700}
 --- !u!1 &1895074089

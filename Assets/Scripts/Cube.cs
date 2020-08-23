@@ -28,8 +28,15 @@ public class Cube
 
         resultObj.isCrit = rand.Next(/*inclusive*/ 0, /*exclusive*/ 101) < CritRate;
         
-        int tempAttack = rand.Next(/*inclusive*/ AttackMin, /*exclusive*/ AttackMax);
-        int actualAttack = tempAttack + (int)Math.Floor(resultObj.isCrit ? tempAttack * CritDamage : 0);
+        int baseAttack = rand.Next(/*inclusive*/ AttackMin, /*exclusive*/ AttackMax);
+        foreach (Item item in Equipped)
+        {
+            if (item.StatType == StatType.ATTACK)
+            {
+                baseAttack += item.StatIncrease;
+            }
+        }
+        int actualAttack = baseAttack + (int)Math.Floor(resultObj.isCrit ? baseAttack * CritDamage : 0);
         
         resultObj.enemyDefense = enemy.Defense;
         
