@@ -1,5 +1,6 @@
 ﻿public sealed class SceneIndex
 {
-    public static int MENU_INDEX = 0;
-    public static int FIGHT_INDEX = 1;
+    public static readonly int MAP_INDEX = 0;
+    public static readonly int FIGHT_INDEX = 1;
+    public static readonly int FIGHT_REWARD_INDEX = 2;
 }

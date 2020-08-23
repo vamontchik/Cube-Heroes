@@ -6,6 +6,7 @@ using System.Linq;
 using System.Collections;
 using UnityEngine.SceneManagement;
 using System;
+using static DataSaver;
 
 public class GameManager : MonoBehaviour
 {
@@ -58,9 +59,17 @@ public class GameManager : MonoBehaviour
             Speed = 2,
             CritRate = 25,
             CritDamage = 1.5,
-            Name = "ally"
+            Name = "ally",
+            Equipped = new List<Item>()
         };
 
+        Debug.Log("Loading item data...");
+        Item item = LoadItemData(ALLY_DATA_FILENAME);
+        if (item != null)
+        {
+            Debug.Log(string.Format("Loaded item: {0}", item));
+            ally.Equipped.Add(item);
+        }
 
         enemy = new Cube
         {
@@ -74,7 +83,8 @@ public class GameManager : MonoBehaviour
             Speed = 1,
             CritRate = 10,
             CritDamage = 1.5,
-            Name = "enemy"
+            Name = "enemy",
+            Equipped = new List<Item>()
         };
 
         allCubes = new List<Cube> 
@@ -93,7 +103,6 @@ public class GameManager : MonoBehaviour
         uiQueue = new Queue<Action>();
 
         StartCoroutine(LogicUpdate());
-        StartCoroutine(ActionUpdate());
     }
 
     private List<Cube> UpdateSpeeds()
@@ -141,7 +150,7 @@ public class GameManager : MonoBehaviour
         created.SetText(result.damageApplied.ToString());
         if (result.isCrit)
         {
-            created.color = Color.red;
+            created.faceColor = Color.red;
         }
         listOfDamageNumbers.Add(created);
     }
@@ -163,7 +172,7 @@ public class GameManager : MonoBehaviour
     IEnumerator DelayBeforeExit()
     {
         yield return new WaitForSeconds(2f);
-        SceneManager.LoadScene(SceneIndex.MENU_INDEX);
+        SceneManager.LoadScene(SceneIndex.FIGHT_REWARD_INDEX);
     }
 
     private IEnumerator MoveCubes(List<Cube> cubes, List<AttackResult> results)
@@ -265,19 +274,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private IEnumerator ActionUpdate()
-    {
-        while(true)
-        {
-            int queueLengthCapture = uiQueue.Count;
-            for (int i = 0; i < queueLengthCapture; ++i)
-            {
-                uiQueue.Dequeue().Invoke();
-            }
-            yield return new WaitForSeconds(_60_HZ);
-        }
-    }
-
     private void FixedUpdate()
     {
         if (!objectsMoving) return;
@@ -303,5 +299,12 @@ public class GameManager : MonoBehaviour
     {
         CleanUpDamageNumbers();
         UpdateAlphasAndPositionsForDamageNumbers();
+        
+        // clear through current ui actions in queue
+        int queueLengthCapture = uiQueue.Count;
+        for (int i = 0; i < queueLengthCapture; ++i)
+        {
+            uiQueue.Dequeue().Invoke();
+        }
     }
 }

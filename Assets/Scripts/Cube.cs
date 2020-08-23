@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 public class Cube
 {
@@ -19,7 +20,7 @@ public class Cube
     public int CritRate { get; set; }
     public double CritDamage { get; set; }
     public string Name { get; set; }
-
+    public List<Item> Equipped { get; set; }
 
     public AttackResult Attack(Cube enemy)
     {
