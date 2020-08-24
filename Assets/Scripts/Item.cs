@@ -10,7 +10,7 @@ public enum ItemType
 [Serializable]
 public enum StatType
 {
-    ATTACK, DEFENSE, HEALTH
+    ATTACK, DEFENSE, HEALTH, CRIT_RATE, CRIT_DAMAGE, SPEED
 }
 
 [Serializable]

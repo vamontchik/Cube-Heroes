@@ -16,6 +16,9 @@ public class FightRewardManager : MonoBehaviour
     public Sprite weaponSprite;
     public Sprite helmetSprite;
     public Sprite shieldSprite;
+    public Sprite glovesSprite;
+    public Sprite chestSprite;
+    public Sprite bootsSprite;
     public Image lastDropImage;
 
     public void Start()
@@ -39,7 +42,7 @@ public class FightRewardManager : MonoBehaviour
             if (!success2)
             {
                 Debug.LogError("Could not save level reward item!"); // if we hit here, it'll be noticeable since we disabled UI elems
-                // drop = null; ???
+                drop = null;
                 uiQueue.Enqueue(() => lastDropImage.sprite = null);
                 uiQueue.Enqueue(() => lastDropImage.enabled = false);
                 uiQueue.Enqueue(() => dropStat.SetText(""));
@@ -59,12 +62,33 @@ public class FightRewardManager : MonoBehaviour
                     case ItemType.SHIELD:
                         uiQueue.Enqueue(() => lastDropImage.sprite = shieldSprite);
                         break;
-                    default:
-                        uiQueue.Enqueue(() => lastDropImage.sprite = null);
+                    case ItemType.GLOVES:
+                        uiQueue.Enqueue(() => lastDropImage.sprite = glovesSprite);
                         break;
+                    case ItemType.CHEST:
+                        uiQueue.Enqueue(() => lastDropImage.sprite = chestSprite);
+                        break;
+                    case ItemType.BOOTS:
+                        uiQueue.Enqueue(() => lastDropImage.sprite = bootsSprite);
+                        break;
+                    //default:
+                    //    uiQueue.Enqueue(() => lastDropImage.sprite = null);
+                    //    break;
                 }
                 uiQueue.Enqueue(() => lastDropImage.enabled = true);
-                uiQueue.Enqueue(() => dropStat.SetText(string.Format("+{0}", drop.StatIncrease)));
+
+                if (drop.ItemType == ItemType.CHEST)
+                {
+                    uiQueue.Enqueue(() => dropStat.SetText(string.Format("+{0:F3}", drop.StatIncrease / 1000.0)));
+                }
+                else if (drop.ItemType == ItemType.BOOTS)
+                {
+                    uiQueue.Enqueue(() => dropStat.SetText(string.Format("+{0:F1}", drop.StatIncrease / 10.0)));
+                }
+                else
+                {
+                    uiQueue.Enqueue(() => dropStat.SetText(string.Format("+{0}", drop.StatIncrease)));
+                }
             }            
         }
     }

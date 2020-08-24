@@ -56,6 +56,15 @@ public class Cube
                 Health += item.StatIncrease;
                 MaxHealth += item.StatIncrease;
                 break;
+            case StatType.CRIT_RATE:
+                CritRate += item.StatIncrease;
+                break;
+            case StatType.CRIT_DAMAGE:
+                CritDamage += (item.StatIncrease / 1000.0); // see RandomGenerator.cs
+                break;
+            case StatType.SPEED:
+                Speed += (item.StatIncrease / 10.0); // see RandomGenerator.cs
+                break;
         }
     }
 

@@ -45,6 +45,9 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI weaponDamageText;
     public TextMeshProUGUI helmetHPText;
     public TextMeshProUGUI shieldDefText;
+    public TextMeshProUGUI glovesText;
+    public TextMeshProUGUI chestText;
+    public TextMeshProUGUI bootsText;
 
     public Rigidbody allyRigidbody;
     public Rigidbody enemyRigidbody;
@@ -80,7 +83,7 @@ public class GameManager : MonoBehaviour
             TurnValue = 0.0,
             MaxTurnValue = 100.0,
             Speed = 2.0,              // only difference from enemy base @ level 1
-            CritRate = 0,
+            CritRate = 1,
             CritDamage = 1.5,
             Name = "ally",
             Equipped = new List<Item>()
@@ -94,6 +97,9 @@ public class GameManager : MonoBehaviour
             uiQueue.Enqueue(() => weaponDamageText.SetText("+0"));
             uiQueue.Enqueue(() => helmetHPText.SetText("+0"));
             uiQueue.Enqueue(() => shieldDefText.SetText("+0"));
+            uiQueue.Enqueue(() => glovesText.SetText("+0"));
+            uiQueue.Enqueue(() => chestText.SetText("+0.00"));
+            uiQueue.Enqueue(() => bootsText.SetText("+0.000"));
         }
         else
         {
@@ -107,18 +113,21 @@ public class GameManager : MonoBehaviour
             ally.Equipped.Add(items.Shield);
             ally.Apply(items.Shield);
 
-            //ally.Equipped.Add(items.Gloves);
-            //Apply()...
+            ally.Equipped.Add(items.Gloves);
+            ally.Apply(items.Gloves);
 
-            //ally.Equipped.Add(items.Chest);
-            //Apply()...
+            ally.Equipped.Add(items.Chest);
+            ally.Apply(items.Chest);
 
-            //ally.Equipped.Add(items.Boots);
-            //Apply()...
+            ally.Equipped.Add(items.Boots);
+            ally.Apply(items.Boots);
 
             uiQueue.Enqueue(() => weaponDamageText.SetText(string.Format("+{0}", items.Weapon.StatIncrease)));
             uiQueue.Enqueue(() => helmetHPText.SetText(string.Format("+{0}", items.Helmet.StatIncrease)));
-            uiQueue.Enqueue(() => shieldDefText.SetText(string.Format("+{0}", items.Shield.StatIncrease)));
+            uiQueue.Enqueue(() => shieldDefText.SetText(string.Format("+{0}", items.Shield.StatIncrease)));            
+            uiQueue.Enqueue(() => glovesText.SetText(string.Format("+{0}", items.Gloves.StatIncrease)));
+            uiQueue.Enqueue(() => chestText.SetText(string.Format("+{0:F3}", items.Chest.StatIncrease / 1000.0)));
+            uiQueue.Enqueue(() => bootsText.SetText(string.Format("+{0:F1}", items.Boots.StatIncrease / 10.0)));
         }
 
         // BASE ENEMY STATS
@@ -128,12 +137,12 @@ public class GameManager : MonoBehaviour
             MaxHealth = 25 * level,              // every level, maxHealth increased by 25,   start at 25 hp
             AttackMin = 5 + ((level - 1) * 5),   // every level, attackMin increased by 5,    start at 5  min
             AttackMax = 10 + ((level - 1) * 5),  // every level, attackMax increased by 5,    start at 10 max
-            Defense = 1 * level,                 // every level, defense increased by 1,      start at 1 defense
+            Defense = 1 + 1 * (level - 1),       // every level, defense increased by 1,      start at 1 defense
             TurnValue = 0.0,
             MaxTurnValue = 100.0,
-            Speed = 1.0 + ((level - 1) / 10.0),   // every level, increase speed by 0.1,           start at 1 speed
-            CritRate = (int)((level - 1) / 10.0), // every 10 levels, increase crit rate by 1%     start at 0% crit rate
-            CritDamage = 1.5,                     // + 150%
+            Speed = 1.0 + ((level - 1) / 10.0),                // every level, increase speed by 0.1,                 start at 1 speed
+            CritRate = 1 + (int)Math.Floor((level - 1) / 4.0), // every 4 levels, increase crit rate by 1%            start at 1% crit rate
+            CritDamage = 1.5 + ((level - 1) / 1000.0),         // +150% , every level increased crit damage by 0.01%  start at x1.5
             Name = "enemy",
             Equipped = new List<Item>()
         };

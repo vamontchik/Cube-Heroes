@@ -580,6 +580,9 @@ MonoBehaviour:
   weaponSprite: {fileID: 21300000, guid: 75cb57a317a210f4db310f168d33b03d, type: 3}
   helmetSprite: {fileID: 21300000, guid: 325599117d6d11f4998c9575af67379a, type: 3}
   shieldSprite: {fileID: 21300000, guid: d110d6608dd712144be3991850f2c492, type: 3}
+  glovesSprite: {fileID: 21300000, guid: 530ce229181010d44bf1edf2a44387a5, type: 3}
+  chestSprite: {fileID: 21300000, guid: 24915648b1bcce64783f833185e9e85a, type: 3}
+  bootsSprite: {fileID: 21300000, guid: 36e5ec99488b417469b05d270d601699, type: 3}
   lastDropImage: {fileID: 1657229944}
 --- !u!4 &1522260561
 Transform:

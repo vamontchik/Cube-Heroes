@@ -13,13 +13,19 @@ public class MapManager : MonoBehaviour
     public Image lastDropImage;
     public Sprite weaponSprite;
     public Sprite helmetSprite;
-    public Sprite shieldSprite;
+    public Sprite shieldSprite;    
+    public Sprite glovesSprite;
+    public Sprite chestSprite;
+    public Sprite bootsSprite;
     public TextMeshProUGUI newItemText;
     public Button equipButton;
     public TextMeshProUGUI equipButtonText;
     public TextMeshProUGUI inventoryWeaponStat;
     public TextMeshProUGUI inventoryHelmetStat;
     public TextMeshProUGUI inventoryShieldStat;
+    public TextMeshProUGUI inventoryGlovesStat;
+    public TextMeshProUGUI inventoryChestStat;
+    public TextMeshProUGUI inventoryBootsStat;
     public TMP_InputField inputField;
     public EventSystem eventSystem;
 
@@ -35,14 +41,20 @@ public class MapManager : MonoBehaviour
         {
             SetInventoryText(inventoryWeaponStat, 0);
             SetInventoryText(inventoryHelmetStat, 0);
-            SetInventoryText(inventoryShieldStat, 0);
+            SetInventoryText(inventoryShieldStat, 0);            
+            SetInventoryText(inventoryGlovesStat, 0);
+            SetInventoryTextPrecision3(inventoryChestStat, 0);
+            SetInventoryTextPrecision2(inventoryBootsStat, 0);
         } 
         else
         {
             // lambda capture of actual stat value, not reference to stat value, b/c copy <=== applies anymore?
             SetInventoryText(inventoryWeaponStat, current.Weapon.StatIncrease);
             SetInventoryText(inventoryHelmetStat, current.Helmet.StatIncrease);
-            SetInventoryText(inventoryShieldStat, current.Shield.StatIncrease);
+            SetInventoryText(inventoryShieldStat, current.Shield.StatIncrease);            
+            SetInventoryText(inventoryGlovesStat, current.Gloves.StatIncrease);
+            SetInventoryTextPrecision3(inventoryChestStat, current.Chest.StatIncrease);
+            SetInventoryTextPrecision2(inventoryBootsStat, current.Boots.StatIncrease);
         }
 
         (Item drop, bool success2) = DataManager.LoadLevelRewardItem();
@@ -137,12 +149,15 @@ public class MapManager : MonoBehaviour
                 break;
             case ItemType.GLOVES:
                 current.Gloves = lastDrop;
+                SetInventoryText(inventoryGlovesStat, lastDrop.StatIncrease);
                 break;
             case ItemType.CHEST:
                 current.Chest = lastDrop;
+                SetInventoryTextPrecision3(inventoryChestStat, lastDrop.StatIncrease);
                 break;
             case ItemType.BOOTS:
                 current.Boots = lastDrop;
+                SetInventoryTextPrecision2(inventoryBootsStat, lastDrop.StatIncrease);
                 break;
         }
 
@@ -179,7 +194,6 @@ public class MapManager : MonoBehaviour
         uiQueue.Enqueue(() => newItemText.SetText("New Item:"));   
         switch (drop.ItemType)
         {
-            // TODO: impl for the rest of item types when they're done...
             case ItemType.WEAPON:
                 uiQueue.Enqueue(() => lastDropImage.sprite = weaponSprite);
                 break;
@@ -189,12 +203,31 @@ public class MapManager : MonoBehaviour
             case ItemType.SHIELD:
                 uiQueue.Enqueue(() => lastDropImage.sprite = shieldSprite);
                 break;
-            default:
-                uiQueue.Enqueue(() => lastDropImage.sprite = null);
+            case ItemType.GLOVES:
+                uiQueue.Enqueue(() => lastDropImage.sprite = glovesSprite);
+                break;            
+            case ItemType.CHEST:
+                uiQueue.Enqueue(() => lastDropImage.sprite = chestSprite);
+                break;            
+            case ItemType.BOOTS:
+                uiQueue.Enqueue(() => lastDropImage.sprite = bootsSprite);
                 break;
         }
         uiQueue.Enqueue(() => lastDropImage.enabled = true);
-        uiQueue.Enqueue(() => lastDropStats.SetText(string.Format("+{0}", lastDrop.StatIncrease)));
+
+        if (drop.ItemType == ItemType.CHEST)
+        {
+            uiQueue.Enqueue(() => lastDropStats.SetText(string.Format("+{0:F3}", drop.StatIncrease / 1000.0)));
+        }
+        else if (drop.ItemType == ItemType.BOOTS)
+        {
+            uiQueue.Enqueue(() => lastDropStats.SetText(string.Format("+{0:F1}", drop.StatIncrease / 10.0)));
+        }
+        else
+        {
+            uiQueue.Enqueue(() => lastDropStats.SetText(string.Format("+{0}", drop.StatIncrease)));
+        }        
+
         uiQueue.Enqueue(() => equipButton.image.enabled = true);
         uiQueue.Enqueue(() => equipButtonText.enabled = true);
     }
@@ -202,5 +235,15 @@ public class MapManager : MonoBehaviour
     private void SetInventoryText(TextMeshProUGUI inventoryItemStat, int value)
     {
         uiQueue.Enqueue(() => inventoryItemStat.SetText(string.Format("+{0}", value)));
+    }
+
+    private void SetInventoryTextPrecision3(TextMeshProUGUI inventoryItemStat, double value)
+    {
+        uiQueue.Enqueue(() => inventoryItemStat.SetText(string.Format("+{0:F3}", value / 1000.0)));
+    }
+
+    private void SetInventoryTextPrecision2(TextMeshProUGUI inventoryItemStat, double value)
+    {
+        uiQueue.Enqueue(() => inventoryItemStat.SetText(string.Format("+{0:F1}", value / 10.0)));
     }
 }
