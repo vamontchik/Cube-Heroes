@@ -6,7 +6,6 @@ using System.Linq;
 using System.Collections;
 using UnityEngine.SceneManagement;
 using System;
-using static DataSaver;
 
 public class GameManager : MonoBehaviour
 {
@@ -30,6 +29,8 @@ public class GameManager : MonoBehaviour
 
     private readonly float _60_HZ = 0.01667f;
 
+    private int level;
+
     // Unity objects
     public Transform allyTransform;
     public Transform enemyTransform;
@@ -42,6 +43,8 @@ public class GameManager : MonoBehaviour
     public TextMeshPro damageNumbersPrefab;
 
     public TextMeshProUGUI weaponDamageText;
+    public TextMeshProUGUI helmetHPText;
+    public TextMeshProUGUI shieldDefText;
 
     public Rigidbody allyRigidbody;
     public Rigidbody enemyRigidbody;
@@ -49,56 +52,94 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        (int temp, bool success1) = DataManager.LoadLevelIndex();
+        if (!success1)
+        {
+            // fallback on level one and log an error
+            Debug.LogError("Unable to load level index!");
+            level = 1;
+        }
+        else
+        {
+            Debug.Log("Loaded level index!");
+            level = temp;
+        }
+
+        Debug.Log(string.Format("level: {0}", level));
+
         uiQueue = new Queue<Action>();
 
+        // BASE ALLY STATS
         ally = new Cube
         {
-            Health = 200,
-            MaxHealth = 200,
-            AttackMin = 10,
-            AttackMax = 20,
-            Defense = 0,
-            TurnValue = 0,
-            MaxTurnValue = 100,
-            Speed = 2,
-            CritRate = 25,
+            Health = 25,
+            MaxHealth = 25,
+            AttackMin = 5,
+            AttackMax = 10,
+            Defense = 1,
+            TurnValue = 0.0,
+            MaxTurnValue = 100.0,
+            Speed = 2.0,              // only difference from enemy base @ level 1
+            CritRate = 0,
             CritDamage = 1.5,
             Name = "ally",
             Equipped = new List<Item>()
         };
 
-        Debug.Log("Loading item data...");
-        Item item = LoadItemData();
-        if (item != null)
+        (EquippableSet items, bool success) = DataManager.LoadAllyInventory();
+        if (!success)
         {
-            Debug.Log(string.Format("Loaded item: {0}", item));
-            
-            ally.Equipped.Add(item);
-
-            uiQueue.Enqueue(() => weaponDamageText.SetText(string.Format("+{0}", item.StatIncrease)));
-        } 
-        else
-        {
-            Debug.Log("No items found!");
+            Debug.LogWarning("Could not load ally inventory!");
 
             uiQueue.Enqueue(() => weaponDamageText.SetText("+0"));
+            uiQueue.Enqueue(() => helmetHPText.SetText("+0"));
+            uiQueue.Enqueue(() => shieldDefText.SetText("+0"));
+        }
+        else
+        {
+            Debug.Log("Loaded ally inventory!");
+
+            ally.Equipped.Add(items.Weapon);
+            
+            ally.Equipped.Add(items.Helmet);
+            ally.Apply(items.Helmet);
+
+            ally.Equipped.Add(items.Shield);
+            ally.Apply(items.Shield);
+
+            //ally.Equipped.Add(items.Gloves);
+            //Apply()...
+
+            //ally.Equipped.Add(items.Chest);
+            //Apply()...
+
+            //ally.Equipped.Add(items.Boots);
+            //Apply()...
+
+            uiQueue.Enqueue(() => weaponDamageText.SetText(string.Format("+{0}", items.Weapon.StatIncrease)));
+            uiQueue.Enqueue(() => helmetHPText.SetText(string.Format("+{0}", items.Helmet.StatIncrease)));
+            uiQueue.Enqueue(() => shieldDefText.SetText(string.Format("+{0}", items.Shield.StatIncrease)));
         }
 
+        // BASE ENEMY STATS
         enemy = new Cube
         {
-            Health = 100,
-            MaxHealth = 100,
-            AttackMin = 5,
-            AttackMax = 10,
-            Defense = 0,
-            TurnValue = 0,
-            MaxTurnValue = 100,
-            Speed = 1,
-            CritRate = 10,
-            CritDamage = 1.5,
+            Health = 25 * level,                 // every level, health increased by 25,      start at 25 hp
+            MaxHealth = 25 * level,              // every level, maxHealth increased by 25,   start at 25 hp
+            AttackMin = 5 + ((level - 1) * 5),   // every level, attackMin increased by 5,    start at 5  min
+            AttackMax = 10 + ((level - 1) * 5),  // every level, attackMax increased by 5,    start at 10 max
+            Defense = 1 * level,                 // every level, defense increased by 1,      start at 1 defense
+            TurnValue = 0.0,
+            MaxTurnValue = 100.0,
+            Speed = 1.0 + ((level - 1) / 10.0),   // every level, increase speed by 0.1,           start at 1 speed
+            CritRate = (int)((level - 1) / 10.0), // every 10 levels, increase crit rate by 1%     start at 0% crit rate
+            CritDamage = 1.5,                     // + 150%
             Name = "enemy",
             Equipped = new List<Item>()
         };
+
+        Debug.Log(ally);
+        Debug.Log(enemy);
 
         allCubes = new List<Cube> 
         { 
@@ -166,14 +207,9 @@ public class GameManager : MonoBehaviour
         listOfDamageNumbers.Add(created);
     }
 
-    private void UpdateSlider(Slider slider, int current, int max)
+    private void UpdateSlider(Slider slider, double current, double max)
     {
-        slider.value = 1.0f * current / max;
-    }
-
-    private void UpdateSlider(Slider slider, float current, int max)
-    {
-        slider.value = current / max;
+        slider.value = (float) (current / max);
     }
 
     //
@@ -183,13 +219,29 @@ public class GameManager : MonoBehaviour
     IEnumerator DelayBeforeExit()
     {
         yield return new WaitForSeconds(2f);
-        SceneManager.LoadScene(SceneIndex.FIGHT_REWARD_INDEX);
+
+        if (enemy.Health <= 0)
+        {
+            // on win, go to scene w/ reward
+
+            Debug.Log("Win! Going to reward scene...");
+            SceneManager.LoadScene(SceneIndex.FIGHT_REWARD_INDEX);
+        } 
+        else
+        {
+            // on loss, go back to map w/o reward
+
+            Debug.Log("Loss! Returning to map...");
+            SceneManager.LoadScene(SceneIndex.MAP_INDEX);
+        }
+
+
     }
 
     private IEnumerator MoveCubes(List<Cube> cubes, List<AttackResult> results)
     {
         if (cubes.Count != results.Count)
-            Debug.LogWarning(string.Format("size mismatch - cubes: {0}, results: {1}", cubes.Count, results.Count));
+            Debug.LogError(string.Format("size mismatch - cubes: {0}, results: {1}", cubes.Count, results.Count));
 
         // create moving actions
         List<MovingAction> actions = new List<MovingAction>();

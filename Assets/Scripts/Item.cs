@@ -7,24 +7,20 @@ public enum ItemType
     WEAPON, HELMET, SHIELD, GLOVES, CHEST, BOOTS
 }
 
+[Serializable]
 public enum StatType
 {
-    ATTACK
+    ATTACK, DEFENSE, HEALTH
 }
 
 [Serializable]
 public class Item
 {
-    //
     // NOTE: not using properties because JsonUtility does not support them... :/
-    //
-    //public string Name { get; set; }
-    //public int StatIncrease { get; set; }
-
-    public string Name = "";
-    public ItemType ItemType = ItemType.WEAPON;
-    public StatType StatType = StatType.ATTACK; 
-    public int StatIncrease = 0;
+    public string Name;
+    public ItemType ItemType;
+    public StatType StatType;
+    public int StatIncrease;
 
     public override string ToString()
     {
