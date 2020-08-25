@@ -17,7 +17,7 @@ public class Cube
     public double TurnValue { get; set; }
     public double MaxTurnValue { get; set; }
     public double Speed { get; set; }
-    public int CritRate { get; set; }
+    public double CritRate { get; set; }
     public double CritDamage { get; set; }
     public string Name { get; set; }
     public List<Item> Equipped { get; set; }
@@ -57,10 +57,10 @@ public class Cube
                 MaxHealth += item.StatIncrease;
                 break;
             case StatType.CRIT_RATE:
-                CritRate += item.StatIncrease;
+                CritRate += (item.StatIncrease / 100.0); // see RandomGenerator.cs
                 break;
             case StatType.CRIT_DAMAGE:
-                CritDamage += (item.StatIncrease / 1000.0); // see RandomGenerator.cs
+                CritDamage += (item.StatIncrease / 100.0); // see RandomGenerator.cs
                 break;
             case StatType.SPEED:
                 Speed += (item.StatIncrease / 10.0); // see RandomGenerator.cs
@@ -82,7 +82,7 @@ public class Cube
                 baseAttack += item.StatIncrease;
             }
         }
-        int actualAttack = baseAttack + (int)Math.Floor(resultObj.isCrit ? baseAttack * CritDamage : 0);
+        int actualAttack = (int) Math.Floor(resultObj.isCrit ? baseAttack * CritDamage : baseAttack);
 
         int baseEnemyDefense = enemy.Defense;
         foreach (Item item in Equipped)

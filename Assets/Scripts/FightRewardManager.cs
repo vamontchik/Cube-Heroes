@@ -77,17 +77,21 @@ public class FightRewardManager : MonoBehaviour
                 }
                 uiQueue.Enqueue(() => lastDropImage.enabled = true);
 
-                if (drop.ItemType == ItemType.CHEST)
+                if (drop.ItemType == ItemType.GLOVES)
                 {
-                    uiQueue.Enqueue(() => dropStat.SetText(string.Format("+{0:F3}", drop.StatIncrease / 1000.0)));
+                    InventoryTextManager.SetInventoryTextGloves(ref uiQueue, dropStat, drop.StatIncrease);
+                }
+                else if (drop.ItemType == ItemType.CHEST)
+                {
+                    InventoryTextManager.SetInventoryTextChest(ref uiQueue, dropStat, drop.StatIncrease);
                 }
                 else if (drop.ItemType == ItemType.BOOTS)
                 {
-                    uiQueue.Enqueue(() => dropStat.SetText(string.Format("+{0:F1}", drop.StatIncrease / 10.0)));
+                    InventoryTextManager.SetInventoryTextBoots(ref uiQueue, dropStat, drop.StatIncrease);
                 }
                 else
                 {
-                    uiQueue.Enqueue(() => dropStat.SetText(string.Format("+{0}", drop.StatIncrease)));
+                    InventoryTextManager.SetInventoryText(ref uiQueue, dropStat, drop.StatIncrease);
                 }
             }            
         }

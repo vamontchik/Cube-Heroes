@@ -19,7 +19,9 @@ public class MapManager : MonoBehaviour
     public Sprite bootsSprite;
     public TextMeshProUGUI newItemText;
     public Button equipButton;
+    public Button delButton;
     public TextMeshProUGUI equipButtonText;
+    public TextMeshProUGUI delButtonText;
     public TextMeshProUGUI inventoryWeaponStat;
     public TextMeshProUGUI inventoryHelmetStat;
     public TextMeshProUGUI inventoryShieldStat;
@@ -33,28 +35,30 @@ public class MapManager : MonoBehaviour
     private Queue<Action> uiQueue;
     private Item lastDrop;
 
+    private static readonly int MIN_LEVEL = 1;
+    private static readonly int MAX_LEVEL = 1000 + 1;
+
     public void Start()
     {
         uiQueue = new Queue<Action>();
-        (EquippableSet current, bool success1) = DataManager.LoadAllyInventory();
-        if (!success1)
+        (EquippableSet current, bool success) = DataManager.LoadAllyInventory();
+        if (!success)
         {
-            SetInventoryText(inventoryWeaponStat, 0);
-            SetInventoryText(inventoryHelmetStat, 0);
-            SetInventoryText(inventoryShieldStat, 0);            
-            SetInventoryText(inventoryGlovesStat, 0);
-            SetInventoryTextPrecision3(inventoryChestStat, 0);
-            SetInventoryTextPrecision2(inventoryBootsStat, 0);
+            InventoryTextManager.SetInventoryText(ref uiQueue, inventoryWeaponStat, 0);
+            InventoryTextManager.SetInventoryText(ref uiQueue, inventoryHelmetStat, 0);
+            InventoryTextManager.SetInventoryText(ref uiQueue, inventoryShieldStat, 0);
+            InventoryTextManager.SetInventoryTextGloves(ref uiQueue, inventoryGlovesStat, 0.00);
+            InventoryTextManager.SetInventoryTextChest(ref uiQueue, inventoryChestStat, 0);
+            InventoryTextManager.SetInventoryTextBoots(ref uiQueue, inventoryBootsStat, 0.0);
         } 
         else
         {
-            // lambda capture of actual stat value, not reference to stat value, b/c copy <=== applies anymore?
-            SetInventoryText(inventoryWeaponStat, current.Weapon.StatIncrease);
-            SetInventoryText(inventoryHelmetStat, current.Helmet.StatIncrease);
-            SetInventoryText(inventoryShieldStat, current.Shield.StatIncrease);            
-            SetInventoryText(inventoryGlovesStat, current.Gloves.StatIncrease);
-            SetInventoryTextPrecision3(inventoryChestStat, current.Chest.StatIncrease);
-            SetInventoryTextPrecision2(inventoryBootsStat, current.Boots.StatIncrease);
+            InventoryTextManager.SetInventoryText(ref uiQueue, inventoryWeaponStat, current.Weapon.StatIncrease);
+            InventoryTextManager.SetInventoryText(ref uiQueue, inventoryHelmetStat, current.Helmet.StatIncrease);
+            InventoryTextManager.SetInventoryText(ref uiQueue, inventoryShieldStat, current.Shield.StatIncrease);
+            InventoryTextManager.SetInventoryTextGloves(ref uiQueue, inventoryGlovesStat, current.Gloves.StatIncrease);
+            InventoryTextManager.SetInventoryTextChest(ref uiQueue, inventoryChestStat, current.Chest.StatIncrease);
+            InventoryTextManager.SetInventoryTextBoots(ref uiQueue, inventoryBootsStat, current.Boots.StatIncrease);
         }
 
         (Item drop, bool success2) = DataManager.LoadLevelRewardItem();
@@ -68,6 +72,73 @@ public class MapManager : MonoBehaviour
             Debug.Log(string.Format("Loaded level reward item: {0}", drop));
             AddNewItemToUI(drop);
         }
+
+        (int index, bool success3) = DataManager.LoadLevelIndex();
+        if (!success2)
+        {
+            uiQueue.Enqueue(() => inputField.text = "1");
+        } 
+        else
+        {
+            uiQueue.Enqueue(() => inputField.text = string.Format("{0}", index));
+        }
+    }
+
+    private int ParseInputText()
+    {
+        int val;
+        try
+        {
+            val = int.Parse(inputField.text);
+        }
+        catch (FormatException)
+        {
+            // empty field?
+            Debug.LogWarning("Invalid value entered into field...");
+            uiQueue.Enqueue(() => inputField.text = string.Format("{0}", MIN_LEVEL)); // TODO : what value makes sense here?
+            eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
+            return -1;
+        }
+
+        if (val < MIN_LEVEL)
+        {
+            // can't have negative or 0 level...
+            Debug.LogWarning("Negative or zero level value entered into field...");
+            uiQueue.Enqueue(() => inputField.text = string.Format("{0}", MIN_LEVEL));
+            eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
+            return -1;
+        }
+
+        if (val > MAX_LEVEL)
+        {
+            // past max level
+            Debug.LogWarning("max level reached...");
+            uiQueue.Enqueue(() => inputField.text = string.Format("{0}", MAX_LEVEL));
+            eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
+            return -1;
+        }
+
+        return val;
+    }
+
+    public void OnClickPlusArea()
+    {
+        int val = ParseInputText();
+        if (val == -1) return;
+        if (val == MAX_LEVEL) return; // can't go above max level
+
+        eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
+        uiQueue.Enqueue(() => inputField.text = string.Format("{0}", val + 1));
+    }
+
+    public void OnClickMinusArea()
+    {
+        int val = ParseInputText();
+        if (val == -1) return;
+        if (val == MIN_LEVEL) return; // can't go below min level
+
+        eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
+        uiQueue.Enqueue(() => inputField.text = string.Format("{0}", val - 1));
     }
 
     public void Update()
@@ -81,40 +152,35 @@ public class MapManager : MonoBehaviour
 
     public void LoadArea()
     {
-        int val;
-        try
-        {
-            val = int.Parse(inputField.text);
-        } 
-        catch (FormatException)
-        {
-            // empty field?
-            Debug.LogWarning("Invalid value entered into field...");
-            inputField.text = "";
-            eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
-            return;
-        }
-        
-        if (val <= 0)
-        {
-            // can't have negative or 0 level...
-            Debug.LogWarning("Negative or zero level value entered into field...");
-            inputField.text = "";
-            eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
-            return;
-        }
+        int val = ParseInputText();
+        if (val == -1) return;
 
         bool success = DataManager.SaveLevelIndex(val);
         if (!success)
         {
             Debug.LogError("Could not save level index!");
-            inputField.text = "";
+            uiQueue.Enqueue(() => inputField.text = "");
             eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
-            return;
         }
         else
         {
             SceneManager.LoadScene(SceneIndex.FIGHT_INDEX);
+        }
+    }
+
+    public void OnDelButtonClick()
+    {
+        if (lastDrop == null)
+        {
+            return;
+        }
+
+        ClearNewItemFromUI();
+
+        bool success = DataManager.DeleteLevelRewardItem();
+        if (!success)
+        {
+            Debug.LogError("Failed to delete level reward item!");
         }
     }
 
@@ -137,27 +203,27 @@ public class MapManager : MonoBehaviour
         {
             case ItemType.WEAPON:
                 current.Weapon = lastDrop;
-                SetInventoryText(inventoryWeaponStat, lastDrop.StatIncrease);
+                InventoryTextManager.SetInventoryText(ref uiQueue, inventoryWeaponStat, lastDrop.StatIncrease);
                 break;
             case ItemType.HELMET:
                 current.Helmet = lastDrop;
-                SetInventoryText(inventoryHelmetStat, lastDrop.StatIncrease);
+                InventoryTextManager.SetInventoryText(ref uiQueue, inventoryHelmetStat, lastDrop.StatIncrease);
                 break;
             case ItemType.SHIELD:
                 current.Shield = lastDrop;
-                SetInventoryText(inventoryShieldStat, lastDrop.StatIncrease);
+                InventoryTextManager.SetInventoryText(ref uiQueue, inventoryShieldStat, lastDrop.StatIncrease);
                 break;
             case ItemType.GLOVES:
                 current.Gloves = lastDrop;
-                SetInventoryText(inventoryGlovesStat, lastDrop.StatIncrease);
+                InventoryTextManager.SetInventoryTextGloves(ref uiQueue, inventoryGlovesStat, lastDrop.StatIncrease);
                 break;
             case ItemType.CHEST:
                 current.Chest = lastDrop;
-                SetInventoryTextPrecision3(inventoryChestStat, lastDrop.StatIncrease);
+                InventoryTextManager.SetInventoryTextChest(ref uiQueue, inventoryChestStat, lastDrop.StatIncrease);
                 break;
             case ItemType.BOOTS:
                 current.Boots = lastDrop;
-                SetInventoryTextPrecision2(inventoryBootsStat, lastDrop.StatIncrease);
+                InventoryTextManager.SetInventoryTextBoots(ref uiQueue, inventoryBootsStat, lastDrop.StatIncrease);
                 break;
         }
 
@@ -180,18 +246,22 @@ public class MapManager : MonoBehaviour
     private void ClearNewItemFromUI()
     {
         lastDrop = null;
-        uiQueue.Enqueue(() => newItemText.SetText(""));
+        uiQueue.Enqueue(() => newItemText.enabled = false);
         uiQueue.Enqueue(() => lastDropImage.sprite = null);
         uiQueue.Enqueue(() => lastDropImage.enabled = false);
-        uiQueue.Enqueue(() => lastDropStats.SetText(""));
+        uiQueue.Enqueue(() => lastDropStats.enabled = false);
         uiQueue.Enqueue(() => equipButton.image.enabled = false);
         uiQueue.Enqueue(() => equipButtonText.enabled = false);
+        uiQueue.Enqueue(() => delButton.image.enabled = false);
+        uiQueue.Enqueue(() => delButtonText.enabled = false);
     }
 
     private void AddNewItemToUI(Item drop)
     {
         lastDrop = drop;
-        uiQueue.Enqueue(() => newItemText.SetText("New Item:"));   
+        uiQueue.Enqueue(() => newItemText.SetText("New Item:"));
+        uiQueue.Enqueue(() => newItemText.enabled = true);
+
         switch (drop.ItemType)
         {
             case ItemType.WEAPON:
@@ -215,35 +285,28 @@ public class MapManager : MonoBehaviour
         }
         uiQueue.Enqueue(() => lastDropImage.enabled = true);
 
-        if (drop.ItemType == ItemType.CHEST)
+        uiQueue.Enqueue(() => lastDropStats.enabled = true);
+        if (drop.ItemType == ItemType.GLOVES)
         {
-            uiQueue.Enqueue(() => lastDropStats.SetText(string.Format("+{0:F3}", drop.StatIncrease / 1000.0)));
+            InventoryTextManager.SetInventoryTextGloves(ref uiQueue, lastDropStats, drop.StatIncrease);
+        }
+        else if (drop.ItemType == ItemType.CHEST)
+        {
+            InventoryTextManager.SetInventoryTextChest(ref uiQueue, lastDropStats, drop.StatIncrease);
         }
         else if (drop.ItemType == ItemType.BOOTS)
         {
-            uiQueue.Enqueue(() => lastDropStats.SetText(string.Format("+{0:F1}", drop.StatIncrease / 10.0)));
+            InventoryTextManager.SetInventoryTextBoots(ref uiQueue, lastDropStats, drop.StatIncrease);
         }
         else
         {
-            uiQueue.Enqueue(() => lastDropStats.SetText(string.Format("+{0}", drop.StatIncrease)));
+            InventoryTextManager.SetInventoryText(ref uiQueue, lastDropStats, drop.StatIncrease);
         }        
 
         uiQueue.Enqueue(() => equipButton.image.enabled = true);
         uiQueue.Enqueue(() => equipButtonText.enabled = true);
-    }
 
-    private void SetInventoryText(TextMeshProUGUI inventoryItemStat, int value)
-    {
-        uiQueue.Enqueue(() => inventoryItemStat.SetText(string.Format("+{0}", value)));
-    }
-
-    private void SetInventoryTextPrecision3(TextMeshProUGUI inventoryItemStat, double value)
-    {
-        uiQueue.Enqueue(() => inventoryItemStat.SetText(string.Format("+{0:F3}", value / 1000.0)));
-    }
-
-    private void SetInventoryTextPrecision2(TextMeshProUGUI inventoryItemStat, double value)
-    {
-        uiQueue.Enqueue(() => inventoryItemStat.SetText(string.Format("+{0:F1}", value / 10.0)));
+        uiQueue.Enqueue(() => delButton.image.enabled = true);
+        uiQueue.Enqueue(() => delButtonText.enabled = true);
     }
 }

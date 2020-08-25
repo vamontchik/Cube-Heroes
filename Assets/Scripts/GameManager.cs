@@ -94,12 +94,12 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("Could not load ally inventory!");
 
-            uiQueue.Enqueue(() => weaponDamageText.SetText("+0"));
-            uiQueue.Enqueue(() => helmetHPText.SetText("+0"));
-            uiQueue.Enqueue(() => shieldDefText.SetText("+0"));
-            uiQueue.Enqueue(() => glovesText.SetText("+0"));
-            uiQueue.Enqueue(() => chestText.SetText("+0.00"));
-            uiQueue.Enqueue(() => bootsText.SetText("+0.000"));
+            InventoryTextManager.SetInventoryText(ref uiQueue, weaponDamageText, 0);
+            InventoryTextManager.SetInventoryText(ref uiQueue, helmetHPText, 0);
+            InventoryTextManager.SetInventoryText(ref uiQueue, shieldDefText, 0);
+            InventoryTextManager.SetInventoryTextGloves(ref uiQueue, glovesText, 0);
+            InventoryTextManager.SetInventoryTextChest(ref uiQueue, chestText, 0);
+            InventoryTextManager.SetInventoryTextBoots(ref uiQueue, bootsText, 0);
         }
         else
         {
@@ -122,12 +122,12 @@ public class GameManager : MonoBehaviour
             ally.Equipped.Add(items.Boots);
             ally.Apply(items.Boots);
 
-            uiQueue.Enqueue(() => weaponDamageText.SetText(string.Format("+{0}", items.Weapon.StatIncrease)));
-            uiQueue.Enqueue(() => helmetHPText.SetText(string.Format("+{0}", items.Helmet.StatIncrease)));
-            uiQueue.Enqueue(() => shieldDefText.SetText(string.Format("+{0}", items.Shield.StatIncrease)));            
-            uiQueue.Enqueue(() => glovesText.SetText(string.Format("+{0}", items.Gloves.StatIncrease)));
-            uiQueue.Enqueue(() => chestText.SetText(string.Format("+{0:F3}", items.Chest.StatIncrease / 1000.0)));
-            uiQueue.Enqueue(() => bootsText.SetText(string.Format("+{0:F1}", items.Boots.StatIncrease / 10.0)));
+            InventoryTextManager.SetInventoryText(ref uiQueue, weaponDamageText, items.Weapon.StatIncrease);
+            InventoryTextManager.SetInventoryText(ref uiQueue, helmetHPText, items.Helmet.StatIncrease);
+            InventoryTextManager.SetInventoryText(ref uiQueue, shieldDefText, items.Shield.StatIncrease);
+            InventoryTextManager.SetInventoryTextGloves(ref uiQueue, glovesText, items.Gloves.StatIncrease);
+            InventoryTextManager.SetInventoryTextChest(ref uiQueue, chestText, items.Chest.StatIncrease);
+            InventoryTextManager.SetInventoryTextBoots(ref uiQueue, bootsText, items.Boots.StatIncrease);
         }
 
         // BASE ENEMY STATS
@@ -140,9 +140,9 @@ public class GameManager : MonoBehaviour
             Defense = 1 + 1 * (level - 1),       // every level, defense increased by 1,      start at 1 defense
             TurnValue = 0.0,
             MaxTurnValue = 100.0,
-            Speed = 1.0 + ((level - 1) / 10.0),                // every level, increase speed by 0.1,                 start at 1 speed
-            CritRate = 1 + (int)Math.Floor((level - 1) / 4.0), // every 4 levels, increase crit rate by 1%            start at 1% crit rate
-            CritDamage = 1.5 + ((level - 1) / 1000.0),         // +150% , every level increased crit damage by 0.01%  start at x1.5
+            Speed = 1.0 + ((level - 1.0) / 10.0),      // every level, increase speed by 0.1,                           start at 1 speed
+            CritRate = 1.0 + ((level - 1.0) / 4.0),    // every level, increase crit rate by 0.25% (treated as percent) start at 1% crit rate
+            CritDamage = 1.5 + ((level - 1) / 100.0),  // every level, increase crit damage by 0.01                     start at 1.5x dmg
             Name = "enemy",
             Equipped = new List<Item>()
         };

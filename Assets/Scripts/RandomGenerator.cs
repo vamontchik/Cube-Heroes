@@ -46,19 +46,19 @@ public class RandomGenerator
                 value = (level - 1) + rand.Next(/*inc*/ 0, /*ex*/ 2 + 1);
                 break;
             case StatType.CRIT_RATE:
-                // Note: match enemy
-                // [1, 1] --(every 4)--> [2, 2]
-                value = 1 + (int)((level - 1.0) / 4.0);
+                // Note: even distribution around enemy stat
+                // [0.00, 0.50] -> [0.25, 0.75] ... except multi by 100 for decimal pts / serialization ... DIVIDE IN OUTPUT , DIVIDE IN APPLY
+                value = 25*(level - 1) + rand.Next(/*inc*/0, /*ex*/50 + 1);
                 break;
             case StatType.CRIT_DAMAGE:
-                // Note: match enemy
-                // [0.001, 0.001] --> [0.002, 0.002] , except multi by 1000 for decimal pts... divide later
-                value = level;
+                // Note: even distribution around enemy stat
+                // [0.00, 0.02] -> [0.01, 0.03] ... except multi by 100 for decimal pts / serialization ... DO NOT DIVIDE IN OUTPUT , DIVIDE IN APPLY
+                value = (level - 1) + rand.Next(/*inc*/ 0, /*ex*/2 + 1);
                 break;
             case StatType.SPEED:
                 // NOTE: always maintain (at most) double speed for next level!
-                // [0.1, 0.2] -> [0.2, 0.4] , except multi by 10 for decimal pts... divide later
-                value = rand.Next((2 * level) / 2, 2 * level);
+                // [0.1, 0.2] -> [0.2, 0.4] , except multi by 10 for decimal pts / serialization ... DIVIDE IN OUTPUT , DIVIDE IN APPLY
+                value = rand.Next(level, 2 * level);
                 break;
             default:
                 value = 0; // should be impossible to hit here...?
