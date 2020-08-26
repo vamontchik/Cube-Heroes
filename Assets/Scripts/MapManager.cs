@@ -74,7 +74,7 @@ public class MapManager : MonoBehaviour
         }
 
         (int index, bool success3) = DataManager.LoadLevelIndex();
-        if (!success2)
+        if (!success3)
         {
             uiQueue.Enqueue(() => inputField.text = "1");
         } 
@@ -124,20 +124,22 @@ public class MapManager : MonoBehaviour
     public void OnClickPlusArea()
     {
         int val = ParseInputText();
+        eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
+
         if (val == -1) return;
         if (val == MAX_LEVEL) return; // can't go above max level
 
-        eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
         uiQueue.Enqueue(() => inputField.text = string.Format("{0}", val + 1));
     }
 
     public void OnClickMinusArea()
     {
         int val = ParseInputText();
+        eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
+
         if (val == -1) return;
         if (val == MIN_LEVEL) return; // can't go below min level
 
-        eventSystem.SetSelectedGameObject(null); // FIX for buttons acting wierd on selection...
         uiQueue.Enqueue(() => inputField.text = string.Format("{0}", val - 1));
     }
 
