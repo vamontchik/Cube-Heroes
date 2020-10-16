@@ -35,7 +35,8 @@ ally = new Cube
 The game operates in a level-based fashion:
 1. In the top left, the player selects which level/area they would like to enter. The player can use the +/- buttons to navigate up or down. Area 1 is the minimum level that player can enter.
 2. Upon entering the area, two cubes spawn! Your cube is the blue one, on the left, and the enemy is the red one, on the right. They'll automatically duke it out, bumping off of one another and damaging each other based on their stats. Your stats will appear next to the blue cube, following it as it moves around. The damage done on each attack is determined by the following code: 
-    * Quick note about speed: your speed value increments your TurnValue every Update() call, so a higher speed will mean you can attack more often!
+    * Note: damage numbers will appear and slowly float up on contact between each character. Red numbers mean the attack was a critical attack!
+    * Note: the large bar matching the cube character is the health of that cube. the yellow bar that fills up until you move denotes your TurnValue, and its fill rate is determined by your speed. A higher speed means you'll be able to attack more often!
 ```c#
 public AttackResult Attack(Cube enemy)
 {
