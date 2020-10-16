@@ -53,19 +53,19 @@ public AttackResult Attack(Cube enemy)
 }
 ```
 
-![Image of Combat](images/combat_example.png)
+![Image of Combat](images/combat_example.PNG)
 
 3. Once either one of you dies, one of two things can happen:
     * If you won, then you'll enter a splash page where a random idea, scaled with the level of the stage, will drop! The only option you have is to return to the home page, but on that page you'll be able to equip or delete the new drop, depending on your choice.
     * If you lose, then you'll just return to the home page, with no drop in hand. Bummer!
 
-![Image of DropPage](images/item_example.png)
+![Image of DropPage](images/item_example.PNG)
 
 4. On the homepage, you'll be able equip or delete the item of your choose. Be careful here! You only have one shot at your choice, and your choices are permanent. If you choose to equip the item, it will override your currently equipped item.
 
-![Before Equip](images/homepage_replace_item_before.png)
+![Before Equip](images/homepage_replace_item_before.PNG)
 
-![After Equip](images/homepage_replace_item_after.png)
+![After Equip](images/homepage_replace_item_after.PNG)
 
 # Balance
 
