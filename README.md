@@ -9,7 +9,7 @@ The six traits on the right side of the screen correspond to the six primary tra
 2. HP, denoted by the hat
 3. Defense, denoted by the shield,
 4. Crit Rate, denoted by the gloves
-5. Crit Chance, denoted by the shirt 
+5. Crit Damage (Multiplier), denoted by the shirt 
 6. Speed, denoted by the boot
 
 These all add on to your base stats, which are:
