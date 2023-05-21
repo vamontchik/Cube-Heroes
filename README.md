@@ -91,8 +91,4 @@ public AttackResult Attack(Cube enemy)
 
 # Balance
 
-Unlike classic gatcha games, progression is made to be linear (sorta)! In this way, players aren't forced to endure lengthy, grindy periods of gameplay with little reward, and instead can endure lengthy, grindy periods of gameplay with an adequate amount of rewards. How nice.
-
-Hopefully, more developers of this genre can pick up on this sort of trend... someday. For now, we can only dream.
-
-Now go out there and play the game, and see if you can find the max level!
+Unlike classic gatcha games, progression is made to be linear (sorta)! In this way, players aren't forced to endure lengthy, grindy periods of gameplay with little reward, and instead can endure lengthy, grindy periods of gameplay with an adequate amount of rewards.
