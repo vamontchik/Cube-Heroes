@@ -1,5 +1,5 @@
 # Overview
-An open-source gatcha-styled game, with C# in Unity! When you start up the game, you'll be greeted with the home page:
+An open-source "skinner box"-styled game, with C# in Unity! When you start up the game, you'll be greeted with the home page:
 
 ![Image of Game](images/screenshot_of_game.PNG)
 
@@ -91,4 +91,4 @@ public AttackResult Attack(Cube enemy)
 
 # Balance
 
-Unlike classic gatcha games, progression is made to be linear (sorta)! In this way, players aren't forced to endure lengthy, grindy periods of gameplay with little reward, and instead can endure lengthy, grindy periods of gameplay with an adequate amount of rewards.
+Unlike classic "skinner box" games, progression is made to be linear (sorta)! In this way, players aren't forced to endure lengthy, grindy periods of gameplay with little reward, and instead can endure lengthy, grindy periods of gameplay with an adequate amount of rewards.
